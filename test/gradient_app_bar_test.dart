@@ -6,8 +6,13 @@ import 'package:flutter_test/flutter_test.dart';
 import './semantics_tester.dart';
 import '../lib/gradient_app_bar.dart';
 
-Widget buildSliverGradientAppBarApp(
-    {bool floating, bool pinned, double expandedHeight, bool snap = false}) {
+Widget buildSliverGradientAppBarApp({
+  bool floating,
+  bool pinned,
+  double expandedHeight,
+  bool snap = false,
+  ScrollController controller,
+}) {
   return Localizations(
     locale: const Locale('en', 'US'),
     delegates: const <LocalizationsDelegate<dynamic>>[
@@ -22,7 +27,8 @@ Widget buildSliverGradientAppBarApp(
           body: DefaultTabController(
             length: 3,
             child: CustomScrollView(
-              primary: true,
+              // primary: true,
+              controller: controller,
               slivers: <Widget>[
                 SliverGradientAppBar(
                   title: const Text('GradientAppBar Title'),
@@ -49,11 +55,6 @@ Widget buildSliverGradientAppBarApp(
       ),
     ),
   );
-}
-
-ScrollController primaryScrollController(WidgetTester tester) {
-  return PrimaryScrollController.of(
-      tester.element(find.byType(CustomScrollView)));
 }
 
 double appBarHeight(WidgetTester tester) =>
@@ -603,13 +604,14 @@ void main() {
 
   testWidgets('SliverGradientAppBar default configuration',
       (WidgetTester tester) async {
+    final controller = ScrollController();
     await tester.pumpWidget(buildSliverGradientAppBarApp(
       floating: false,
       pinned: false,
       expandedHeight: null,
+      controller: controller,
     ));
 
-    final ScrollController controller = primaryScrollController(tester);
     expect(controller.offset, 0.0);
     expect(find.byType(SliverGradientAppBar), findsOneWidget);
 
@@ -640,13 +642,14 @@ void main() {
 
   testWidgets('SliverGradientAppBar expandedHeight, pinned',
       (WidgetTester tester) async {
+    final controller = ScrollController();
     await tester.pumpWidget(buildSliverGradientAppBarApp(
       floating: false,
       pinned: true,
       expandedHeight: 128.0,
+      controller: controller,
     ));
 
-    final ScrollController controller = primaryScrollController(tester);
     expect(controller.offset, 0.0);
     expect(find.byType(SliverGradientAppBar), findsOneWidget);
     expect(appBarHeight(tester), 128.0);
@@ -673,13 +676,14 @@ void main() {
 
   testWidgets('SliverGradientAppBar expandedHeight, pinned and floating',
       (WidgetTester tester) async {
+    final controller = ScrollController();
     await tester.pumpWidget(buildSliverGradientAppBarApp(
       floating: true,
       pinned: true,
       expandedHeight: 128.0,
+      controller: controller,
     ));
 
-    final ScrollController controller = primaryScrollController(tester);
     expect(controller.offset, 0.0);
     expect(find.byType(SliverGradientAppBar), findsOneWidget);
     expect(appBarHeight(tester), 128.0);
@@ -1530,7 +1534,7 @@ void main() {
                     floating: true,
                     snap: snap,
                     actions: <Widget>[
-                      FlatButton(
+                      TextButton(
                         child: const Text('snap=false'),
                         onPressed: () {
                           setState(() {

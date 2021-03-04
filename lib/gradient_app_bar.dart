@@ -379,8 +379,9 @@ class GradientAppBar extends StatefulWidget implements PreferredSizeWidget {
         return false;
       case TargetPlatform.iOS:
         return actions == null || actions.length < 2;
+      default:
+        return null;
     }
-    return null;
   }
 
   @override
@@ -404,7 +405,7 @@ class _GradientAppBarState extends State<GradientAppBar> {
     assert(debugCheckHasMaterialLocalizations(context));
     final ThemeData themeData = Theme.of(context);
     final AppBarTheme appBarTheme = AppBarTheme.of(context);
-    final ScaffoldState scaffold = Scaffold.of(context, nullOk: true);
+    final ScaffoldState scaffold = Scaffold.maybeOf(context);
     final ModalRoute<dynamic> parentRoute = ModalRoute.of(context);
 
     final bool hasDrawer = scaffold?.hasDrawer ?? false;
@@ -418,17 +419,17 @@ class _GradientAppBarState extends State<GradientAppBar> {
     IconThemeData actionsIconTheme = widget.actionsIconTheme ??
         appBarTheme.actionsIconTheme ??
         overallIconTheme;
-    TextStyle centerStyle = widget.textTheme?.title ??
-        appBarTheme.textTheme?.title ??
-        themeData.primaryTextTheme.title;
-    TextStyle sideStyle = widget.textTheme?.body1 ??
-        appBarTheme.textTheme?.body1 ??
-        themeData.primaryTextTheme.body1;
+    TextStyle centerStyle = widget.textTheme?.headline6 ??
+        appBarTheme.textTheme?.headline6 ??
+        themeData.primaryTextTheme.headline6;
+    TextStyle sideStyle = widget.textTheme?.bodyText2 ??
+        appBarTheme.textTheme?.bodyText2 ??
+        themeData.primaryTextTheme.bodyText2;
 
     if (widget.toolbarOpacity != 1.0) {
       final double opacity =
-      const Interval(0.25, 1.0, curve: Curves.fastOutSlowIn)
-          .transform(widget.toolbarOpacity);
+          const Interval(0.25, 1.0, curve: Curves.fastOutSlowIn)
+              .transform(widget.toolbarOpacity);
       if (centerStyle?.color != null)
         centerStyle =
             centerStyle.copyWith(color: centerStyle.color.withOpacity(opacity));
@@ -470,6 +471,7 @@ class _GradientAppBarState extends State<GradientAppBar> {
           namesRoute = true;
           break;
         case TargetPlatform.iOS:
+        default:
           break;
       }
       title = DefaultTextStyle(
@@ -542,11 +544,11 @@ class _GradientAppBarState extends State<GradientAppBar> {
           widget.bottomOpacity == 1.0
               ? widget.bottom
               : Opacity(
-            opacity:
-            const Interval(0.25, 1.0, curve: Curves.fastOutSlowIn)
-                .transform(widget.bottomOpacity),
-            child: widget.bottom,
-          ),
+                  opacity:
+                      const Interval(0.25, 1.0, curve: Curves.fastOutSlowIn)
+                          .transform(widget.bottomOpacity),
+                  child: widget.bottom,
+                ),
         ],
       );
     }
@@ -587,7 +589,7 @@ class _GradientAppBarState extends State<GradientAppBar> {
         child: Material(
             color: appBarTheme.color ?? themeData.primaryColor,
             elevation:
-            widget.elevation ?? appBarTheme.elevation ?? _defaultElevation,
+                widget.elevation ?? appBarTheme.elevation ?? _defaultElevation,
             shape: widget.shape,
             child: Container(
               decoration: BoxDecoration(gradient: widget.gradient),
@@ -633,8 +635,8 @@ class _FloatingGradientAppBarState extends State<_FloatingGradientAppBar> {
   }
 
   RenderSliverFloatingPersistentHeader _headerRenderer() {
-    return context.ancestorRenderObjectOfType(
-        const TypeMatcher<RenderSliverFloatingPersistentHeader>());
+    return context
+        .findAncestorRenderObjectOfType<RenderSliverFloatingPersistentHeader>();
   }
 
   void _isScrollingListener() {
@@ -678,6 +680,7 @@ class _SliverGradientAppBarDelegate extends SliverPersistentHeaderDelegate {
     @required this.pinned,
     @required this.snapConfiguration,
     @required this.shape,
+    @required this.vsync,
   })  : assert(primary || topPadding == 0.0),
         _bottomHeight = bottom?.preferredSize?.height ?? 0.0;
 
@@ -703,6 +706,7 @@ class _SliverGradientAppBarDelegate extends SliverPersistentHeaderDelegate {
   final bool floating;
   final bool pinned;
   final ShapeBorder shape;
+  final TickerProvider vsync;
 
   final double _bottomHeight;
 
@@ -1174,7 +1178,6 @@ class _SliverGradientAppBarState extends State<SliverGradientAppBar>
   void _updateSnapConfiguration() {
     if (widget.snap && widget.floating) {
       _snapConfiguration = FloatingHeaderSnapConfiguration(
-        vsync: this,
         curve: Curves.easeOut,
         duration: const Duration(milliseconds: 200),
       );
@@ -1236,6 +1239,7 @@ class _SliverGradientAppBarState extends State<SliverGradientAppBar>
           pinned: widget.pinned,
           shape: widget.shape,
           snapConfiguration: _snapConfiguration,
+          vsync: this,
         ),
       ),
     );

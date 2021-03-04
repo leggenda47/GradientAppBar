@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import './../../lib/gradient_app_bar.dart';
+import '../../lib/gradient_app_bar.dart';
 
 void main() => runApp(MyApp());
 
@@ -63,7 +63,7 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
               Text(
                 '$_counter',
-                style: Theme.of(context).textTheme.display1,
+                style: Theme.of(context).textTheme.headline4,
               ),
             ],
           ),
